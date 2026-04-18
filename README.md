@@ -154,7 +154,98 @@ Based on my research across multiple sources including официальная д
 [10] Полный гайд Claude Code: С Нуля до SaaS | MCP,  Sub-Агенты, Custom Commands https://www.youtube.com/watch?v=rwnlQqCJvYM
 
 
------------------------------
+Based on my research across multiple sources including официальная документация и русскоязычные гайды по **Claude Code CLI**...
+
+## 1. Расположение файла settings.json
+**Claude Code CLI** использует иерархию настроек с приоритетами:[3]
+```
+~/.claude/settings.json          ← Глобальные настройки (для всех проектов)
+./.claude/settings.json          ← Настройки проекта  
+./.claude/settings.local.json    ← Локальные переопределения (git ignore)
+```
+
+## 2. Настройка нескольких провайдеров API
+Для нескольких провайдеров используйте **переменные окружения в settings.json** или **множественные профили**:
+
+### Вариант 1: env в settings.json (рекомендуется)
+```json
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "env": {
+    // Ваш локальный провайдер (по умолчанию)
+    "CLAUDE_CODE_USE_OPENAI": "1",
+    "OPENAI_BASE_URL": "https://ai.pro6000.cloudsmasters.ru/v1",
+    "OPENAI_API_KEY": "dummy-key", 
+    "OPENAI_MODEL": "gpt-oss-120b",
+    
+    // Anthropic (резервный)
+    "ANTHROPIC_API_KEY": "sk-ant-xxx",
+    
+    // OpenRouter (резервный)
+    "OPENROUTER_API_KEY": "sk-or-v1-xxx"
+  }
+}
+```
+
+### Вариант 2: Профили через модель-префиксы
+```json
+{
+  "defaultModel": "local:gpt-oss-120b",
+  "models": {
+    "local:gpt-oss-120b": {
+      "baseUrl": "https://ai.pro6000.cloudsmasters.ru/v1",
+      "apiKey": "dummy-key"
+    },
+    "anthropic:claude-3-7-sonnet": {
+      "provider": "anthropic"
+    }
+  }
+}
+```
+Затем в CLI: `/model local:gpt-oss-120b` или `/model anthropic:claude-3-7-sonnet`.[3]
+
+## 3. Переключение провайдеров в runtime
+```
+/model local:gpt-oss-120b
+/model anthropic:claude-3-7-sonnet-20250219
+```
+
+## 4. Автоматическое переключение (failover)
+```json
+{
+  "modelFallbacks": {
+    "local:gpt-oss-120b": [
+      "anthropic:claude-3-7-sonnet-20250219",
+      "openrouter:meta-llama/llama-3.3-70b-instruct"
+    ]
+  }
+}
+```
+
+## Ключевые выводы
+1. **Основной способ** — `env` секция в `~/.claude/settings.json` с переменными для всех провайдеров[3]
+2. **Переключение** — через `/model префикс:модель` 
+3. **Failover** — `modelFallbacks` для автоматического переключения при ошибках
+
+Ваш локальный провайдер уже настроен через переменные окружения — добавьте их в **settings.json** для постоянства![1][3]
+
+Надеюсь, это поможет! Если нужны примеры для конкретных провайдеров — пишите!
+
+Источники
+[1] 44 настройки Claude Code, о которых ... https://habr.com/ru/amp/publications/987826/
+[2] 44 настройки Claude Code, о которых вы не знали ... - Habr https://habr.com/ru/articles/987826/
+[3] Параметры Claude Code - Claude Code Docs https://code.claude.com/docs/ru/settings
+[4] 44 настройки Claude Code, о которых вы не знали ... https://www.braintools.ru/article/24593
+[5] claude-code-settings-schema.json - gists · GitHub https://gist.github.com/xdannyrobertsx/0a395c59b1ef09508e52522289bd5bf6
+[6] Settings precedence https://code.claude.com/docs/en/settings
+[7] Полный справочник settings.json | Everything Claude Code https://lzw.me/docs/opencodedocs/ru/affaan-m/everything-claude-code/appendix/config-reference/
+[8] Полное руководство по использованию | Claude Code Cloud Native https://claudecode.blueshirtmap.com/ru/guide.html
+[9] Как настроить автоматизацию через settings.json https://vc.ru/id993973/2711036-nastroika-avtomatizatsii-v-claude-code-cherez-settings-json
+[10] Полный гайд Claude Code: С Нуля до SaaS | MCP,  Sub-Агенты, Custom Commands https://www.youtube.com/watch?v=rwnlQqCJvYM
+
+
+
+--------------------------------------------------------
 
 # ChatGPT
 
